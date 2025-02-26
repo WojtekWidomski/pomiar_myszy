@@ -1,5 +1,7 @@
 # Mouse pointing time measuring program
 
+[Polish README](https://github.com/WojtekWidomski/pomiar_myszy/blob/master/README_PL.md)
+
 Simple program to measure user pointing time written in Rust.
 
 It shows black squares at random positions on screen and prints initial distance
