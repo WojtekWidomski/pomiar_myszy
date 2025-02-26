@@ -23,9 +23,14 @@ use piston::UpdateArgs;
 use piston::UpdateEvent;
 
 const WINDOW_NAME: &str = "Pomiar szybkości celowania myszką";
+/// Delay before displaying new point after user clicked previous point and stopped moving mouse
 const NEW_POINT_DELAY_TIME: f64 = 0.2;
+/// Size of clicking targets
 const CLICK_POINT_SIZE: f64 = 20.;
+/// Number of clicks
 const N: u32 = 5;
+/// Number of clicks, that should be ignored before program starts actually measuring time. This
+/// allows user to get used to using this program.
 const IGNORE_FIRST_N: u32 = 3;
 
 /// State of application
@@ -76,8 +81,8 @@ impl PomiarMyszyApp {
     fn render(&mut self, args: &RenderArgs) {
         use graphics::*;
 
-        const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
-        const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+        const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0]; // background
+        const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0]; // point
 
         let click_point = rectangle::square(
             self.point_position.0,
@@ -96,6 +101,7 @@ impl PomiarMyszyApp {
         });
     }
 
+    /// Returns if click point should be now rendered
     fn is_point_rendered(&self) -> bool {
         match self.state {
             AppState::WaitingForMouseMove => true,
@@ -104,6 +110,7 @@ impl PomiarMyszyApp {
         }
     }
 
+    /// Update state, dt - delta time
     fn update_state(&mut self, dt: f64) {
         match self.state {
             AppState::WaitingForMouseStop => {
@@ -140,6 +147,7 @@ impl PomiarMyszyApp {
         self.mouse_moving = false;
     }
 
+    /// User moved mouse, update mouse position
     fn mouse_moved(&mut self, x: f64, y: f64) {
         self.mouse_pos = (x, y);
         self.mouse_moving = true;
@@ -148,12 +156,15 @@ impl PomiarMyszyApp {
     fn mouse_clicked(&mut self) {
         // In other states clicking mouse is not important
         if let AppState::Measuring(time) = self.state {
+            // Create temporary variables with shroter names
             let (mx, my) = self.mouse_pos;
             let (px1, py1) = self.point_position;
             let px2 = px1 + CLICK_POINT_SIZE;
             let py2 = py1 + CLICK_POINT_SIZE;
+            // If cursor is at clicking point
             if px1 <= mx && mx <= px2 && py1 <= my && my < py2 {
                 if self.ignored && self.point_number >= IGNORE_FIRST_N {
+                    // if clicks should not be ignored anymore
                     self.ignored = false;
                     self.point_number = 0;
                 }
@@ -170,10 +181,13 @@ impl PomiarMyszyApp {
         }
     }
 
+    /// Generate new random point
     fn new_point(&mut self) {
         let new_x = rand::random_range(0..(self.window_size.0 - CLICK_POINT_SIZE as i32));
         let new_y = rand::random_range(0..(self.window_size.1 - CLICK_POINT_SIZE as i32));
         self.point_position = (new_x as f64, new_y as f64);
+
+        // Compute distance (sqrt((x1-x1)^2 + (y1-y2)^2))
         let dist_squared = ((new_x - self.mouse_pos.0 as i32).pow(2)
             + (new_y - self.mouse_pos.1 as i32).pow(2)) as f64;
         self.point_distance = dist_squared.sqrt();
@@ -196,7 +210,7 @@ fn enable_fullscreen(win: &mut Window) {
                 mode.height,
                 Some(mode.refresh_rate),
             );
-        })
+        });
 }
 
 fn main() {
