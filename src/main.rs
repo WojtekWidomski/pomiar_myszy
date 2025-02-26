@@ -61,6 +61,7 @@ pub struct PomiarMyszyApp {
     window_size: (i32, i32),
     point_number: u32,
     ignored: bool,
+    clicks_not_on_target: u32,
 }
 
 impl PomiarMyszyApp {
@@ -75,6 +76,7 @@ impl PomiarMyszyApp {
             window_size,
             point_number: 0,
             ignored: true,
+            clicks_not_on_target: 0,
         }
     }
 
@@ -169,7 +171,10 @@ impl PomiarMyszyApp {
                     self.point_number = 0;
                 }
                 if !self.ignored {
-                    println!("{}; {}; {}", self.point_number, self.point_distance, time);
+                    println!(
+                        "{}; {}; {}; {}",
+                        self.point_number, self.point_distance, time, self.clicks_not_on_target
+                    );
                     if self.point_number >= N - 1 {
                         exit(0);
                     }
@@ -177,6 +182,8 @@ impl PomiarMyszyApp {
                 self.point_number += 1;
                 self.state = AppState::WaitingForMouseStop;
                 self.new_point();
+            } else {
+                self.clicks_not_on_target += 1;
             }
         }
     }
@@ -186,6 +193,7 @@ impl PomiarMyszyApp {
         let new_x = rand::random_range(0..(self.window_size.0 - CLICK_POINT_SIZE as i32));
         let new_y = rand::random_range(0..(self.window_size.1 - CLICK_POINT_SIZE as i32));
         self.point_position = (new_x as f64, new_y as f64);
+        self.clicks_not_on_target = 0;
 
         // Compute distance (sqrt((x1-x1)^2 + (y1-y2)^2))
         let dist_squared = ((new_x - self.mouse_pos.0 as i32).pow(2)
@@ -222,7 +230,7 @@ fn main() {
         .build()
         .unwrap();
 
-    enable_fullscreen(&mut window);
+    //enable_fullscreen(&mut window);
 
     let size = window.window.get_size();
 
@@ -233,7 +241,7 @@ fn main() {
     println!("szerokośc monitora; {}", size.0);
     println!("wysokość monitora: {}", size.1);
 
-    println!("i; odległość [piksele]; czas [s]");
+    println!("i; odległość [piksele]; czas [s]; nietrafione");
 
     app.new_point();
 
