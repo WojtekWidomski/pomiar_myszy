@@ -10,7 +10,7 @@ measures pointing time and not reaction time. It can ignore first few clicks.
 ## Usage
 
 ```
-cargo run --relase
+cargo run --release
 ```
 
 If you want to save output to file:
