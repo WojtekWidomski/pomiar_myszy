@@ -230,7 +230,7 @@ fn main() {
         .build()
         .unwrap();
 
-    //enable_fullscreen(&mut window);
+    enable_fullscreen(&mut window);
 
     let size = window.window.get_size();
 
